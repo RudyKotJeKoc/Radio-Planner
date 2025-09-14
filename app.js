@@ -863,29 +863,62 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!window.audioErrorCount) window.audioErrorCount = 0;
         window.audioErrorCount++;
         
+        // Check if we're already in demo mode - if so, don't show more errors
+        if (state.demoMode) {
+            console.log('Already in demo mode, ignoring audio error');
+            return;
+        }
+        
         if (state.currentTrack) {
             displayError(`Error playing: ${state.currentTrack.title}`);
         }
         
-        // If we have too many consecutive errors, stop trying to play audio
+        // If we have too many consecutive errors, stop trying to play audio completely
         if (window.audioErrorCount >= 3) {
-            console.log('Too many audio errors, entering demo mode');
+            console.log('Too many audio errors, entering permanent demo mode');
             enterDemoMode();
+            
+            // Clear any existing error dialogs
+            const errorDialog = document.querySelector('.error-overlay');
+            if (errorDialog) {
+                errorDialog.remove();
+            }
+            
+            // Show final demo mode message
+            setTimeout(() => {
+                displayError('Demo Mode: Audio files not available. Interface features still work.');
+            }, 1000);
+            
             return;
         }
         
-        // Only try next track if we haven't had too many errors
-        setTimeout(playNextTrack, 2000);
+        // Only try next track if we haven't had too many errors and not in demo mode
+        if (!state.demoMode) {
+            setTimeout(playNextTrack, 2000);
+        }
     }
 
     function enterDemoMode() {
         state.demoMode = true;
         console.log('Entering demo mode - no audio files found');
         
-        // Stop all audio players
+        // Stop all audio players completely
         players.forEach(player => {
             player.pause();
-            player.src = '';
+            player.removeAttribute('src');
+            player.load(); // Clear any pending loads
+        });
+        
+        // Clear any pending audio operations and timeouts
+        if (window.preloadTimeout) {
+            clearTimeout(window.preloadTimeout);
+        }
+        
+        // Stop any existing error recovery attempts
+        players.forEach(player => {
+            player.removeEventListener('error', handleAudioError);
+            player.removeEventListener('canplay', () => {});
+            player.removeEventListener('loadstart', () => {});
         });
         
         // Update UI to show demo mode
@@ -895,6 +928,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.player.artist) {
             dom.player.artist.textContent = 'Geen audiobestanden gevonden';
         }
+        
+        // Stop any play attempts
+        state.isPlaying = false;
+        updatePlayButton();
         
         // Clear any existing intervals
         if (window.demoInterval) {
