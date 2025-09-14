@@ -10,8 +10,42 @@
  * - Advanced caching and performance optimizations
  */
 
-// Initialize GSAP and set up advanced animations
-gsap.registerPlugin(Draggable, MotionPathPlugin);
+// Initialize GSAP and set up advanced animations (if available)
+if (typeof gsap !== 'undefined') {
+    gsap.registerPlugin(Draggable, MotionPathPlugin);
+} else {
+    console.warn('GSAP library not loaded - animations will be disabled');
+    // Create fallback gsap object with minimal functionality
+    window.gsap = {
+        to: function(target, vars) {
+            console.warn('GSAP animation fallback - no animation applied');
+            if (vars.onComplete) vars.onComplete();
+            return { kill: function() {} };
+        },
+        fromTo: function(target, fromVars, toVars) {
+            console.warn('GSAP animation fallback - no animation applied');
+            if (toVars.onComplete) toVars.onComplete();
+            return { kill: function() {} };
+        },
+        timeline: function(vars) {
+            console.warn('GSAP timeline fallback - no timeline created');
+            return {
+                to: function(target, vars) {
+                    if (vars.onComplete) vars.onComplete();
+                    return this;
+                },
+                from: function(target, vars) {
+                    if (vars.onComplete) vars.onComplete();
+                    return this;
+                },
+                set: function(target, vars) { return this; },
+                play: function() { return this; },
+                pause: function() { return this; },
+                kill: function() { return this; }
+            };
+        }
+    };
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Enhanced DOM Element References ---
