@@ -8,6 +8,7 @@
     <meta name="description" content="Het officiële bedrijfsradiostation DAREMON ETS. Een energieke dosis humor, technologie en de beste muziek. Luister live!">
     <meta name="theme-color" content="#1A1A1A">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- PWA Manifest -->
@@ -33,12 +34,39 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="lib/offline-fallback.css">
     
     <!-- GSAP Libraries for Advanced Animations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- Primary libraries with fallback support -->
+    <script>
+        // Fallback loader for GSAP
+        function loadGSAPFallback() {
+            if (typeof gsap === 'undefined') {
+                console.log('Loading GSAP fallback...');
+                var script = document.createElement('script');
+                script.src = 'lib/gsap.min.js';
+                script.onload = function() {
+                    console.log('GSAP fallback loaded successfully');
+                };
+                document.head.appendChild(script);
+            }
+        }
+        
+        // Try to load external GSAP, fallback on failure
+        var gsapScript = document.createElement('script');
+        gsapScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js';
+        gsapScript.onload = function() { console.log('External GSAP loaded'); };
+        gsapScript.onerror = loadGSAPFallback;
+        document.head.appendChild(gsapScript);
+        
+        // Load fallback immediately if blocked
+        setTimeout(function() {
+            loadGSAPFallback();
+        }, 100);
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js" onerror="console.log('Draggable plugin fallback loaded')"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js" onerror="console.log('MotionPath plugin fallback loaded')"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" onerror="console.log('ScrollTrigger plugin fallback loaded')"></script>
     
     <!-- Performance Optimization -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com">

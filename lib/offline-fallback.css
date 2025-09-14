@@ -1,0 +1,26 @@
+/* Offline fallback styles */
+.track-cover, .sticky-cover {
+    background: linear-gradient(135deg, #1A1A1A, #008878);
+    position: relative;
+}
+
+.track-cover::after, .sticky-cover::after {
+    content: "ETS";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #008878;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+/* When image fails to load, show fallback */
+.track-cover[src*="placehold.co"] {
+    background: linear-gradient(135deg, #1A1A1A, #008878) !important;
+}
+
+img[src*="placehold.co"] {
+    background: linear-gradient(135deg, #1A1A1A, #008878);
+    color: transparent;
+}
