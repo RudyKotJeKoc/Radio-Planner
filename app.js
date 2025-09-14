@@ -772,6 +772,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function playNextTrack() {
+        // Don't try to play if in demo mode
+        if (state.demoMode || window.audioErrorCount >= 3) {
+            console.log('Skipping playback - demo mode active');
+            return;
+        }
+        
         const nextTrack = state.nextTrack || selectNextTrack();
         if (!nextTrack) {
             console.error("No track to play");
@@ -853,18 +859,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleAudioError(e) {
         console.error('Audio playback error:', e.target?.src, e);
         
-        // Increment consecutive error count
-        state.consecutiveErrors = (state.consecutiveErrors || 0) + 1;
+        // Increment consecutive error count globally
+        if (!window.audioErrorCount) window.audioErrorCount = 0;
+        window.audioErrorCount++;
         
         if (state.currentTrack) {
             displayError(`Error playing: ${state.currentTrack.title}`);
         }
         
-        // If we have too many consecutive errors, go into demo mode
-        if (state.consecutiveErrors >= 3) {
+        // If we have too many consecutive errors, stop trying to play audio
+        if (window.audioErrorCount >= 3) {
             console.log('Too many audio errors, entering demo mode');
-            state.demoMode = true;
-            updateUIForDemoMode();
+            enterDemoMode();
             return;
         }
         
@@ -872,45 +878,69 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(playNextTrack, 2000);
     }
 
-    function updateUIForDemoMode() {
+    function enterDemoMode() {
+        state.demoMode = true;
+        console.log('Entering demo mode - no audio files found');
+        
+        // Stop all audio players
+        players.forEach(player => {
+            player.pause();
+            player.src = '';
+        });
+        
         // Update UI to show demo mode
         if (dom.player.title) {
-            dom.player.title.textContent = 'Demo Mode - No Audio Files';
+            dom.player.title.textContent = 'Demo Mode';
         }
         if (dom.player.artist) {
-            dom.player.artist.textContent = 'Muziekbestanden niet gevonden';
+            dom.player.artist.textContent = 'Geen audiobestanden gevonden';
         }
         
-        // Simulate track progress for demo
+        // Clear any existing intervals
+        if (window.demoInterval) {
+            clearInterval(window.demoInterval);
+        }
+        
+        // Simulate radio operation for demo
         let demoProgress = 0;
-        const demoInterval = setInterval(() => {
-            if (!state.demoMode) {
-                clearInterval(demoInterval);
-                return;
-            }
-            
+        let currentTrackIndex = 0;
+        
+        window.demoInterval = setInterval(() => {
             demoProgress += 1;
-            if (demoProgress > 100) {
-                demoProgress = 0;
-                // Simulate next track in demo mode
-                state.currentTrack = state.playlist[Math.floor(Math.random() * state.playlist.length)];
-                updateUIForNewTrack();
-            }
             
-            // Update progress bar for demo
+            // Simulate track progress
+            const progressPercent = (demoProgress % 100);
             if (dom.player.progressBar) {
-                dom.player.progressBar.style.width = demoProgress + '%';
+                dom.player.progressBar.style.width = progressPercent + '%';
             }
             if (dom.player.currentTime) {
-                const minutes = Math.floor(demoProgress * 3 / 100);
-                const seconds = Math.floor((demoProgress * 3 % 100) * 60 / 100);
+                const minutes = Math.floor(progressPercent * 3 / 100);
+                const seconds = Math.floor((progressPercent * 3 % 100) * 60 / 100);
                 dom.player.currentTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             }
+            
+            // Simulate track change every 100 seconds
+            if (demoProgress % 100 === 0) {
+                currentTrackIndex = (currentTrackIndex + 1) % state.playlist.length;
+                state.currentTrack = state.playlist[currentTrackIndex];
+                updateUIForNewTrack();
+            }
         }, 1000);
+        
+        // Update play/pause button to show that we're in demo mode
+        updatePlayPauseButtons();
     }
 
     function togglePlayPause() {
         if (!state.isInitialized) { startRadio(); return; }
+        
+        // In demo mode, just toggle the UI state
+        if (state.demoMode || window.audioErrorCount >= 3) {
+            state.isPlaying = !state.isPlaying;
+            updatePlayPauseButtons();
+            return;
+        }
+        
         const activePlayer = players[activePlayerIndex];
         if (activePlayer.paused) {
             if (audioContext && audioContext.state === 'suspended') { 
