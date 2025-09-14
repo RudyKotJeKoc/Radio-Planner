@@ -852,10 +852,61 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function handleAudioError(e) {
         console.error('Audio playback error:', e.target?.src, e);
+        
+        // Increment consecutive error count
+        state.consecutiveErrors = (state.consecutiveErrors || 0) + 1;
+        
         if (state.currentTrack) {
             displayError(`Error playing: ${state.currentTrack.title}`);
         }
+        
+        // If we have too many consecutive errors, go into demo mode
+        if (state.consecutiveErrors >= 3) {
+            console.log('Too many audio errors, entering demo mode');
+            state.demoMode = true;
+            updateUIForDemoMode();
+            return;
+        }
+        
+        // Only try next track if we haven't had too many errors
         setTimeout(playNextTrack, 2000);
+    }
+
+    function updateUIForDemoMode() {
+        // Update UI to show demo mode
+        if (dom.player.title) {
+            dom.player.title.textContent = 'Demo Mode - No Audio Files';
+        }
+        if (dom.player.artist) {
+            dom.player.artist.textContent = 'Muziekbestanden niet gevonden';
+        }
+        
+        // Simulate track progress for demo
+        let demoProgress = 0;
+        const demoInterval = setInterval(() => {
+            if (!state.demoMode) {
+                clearInterval(demoInterval);
+                return;
+            }
+            
+            demoProgress += 1;
+            if (demoProgress > 100) {
+                demoProgress = 0;
+                // Simulate next track in demo mode
+                state.currentTrack = state.playlist[Math.floor(Math.random() * state.playlist.length)];
+                updateUIForNewTrack();
+            }
+            
+            // Update progress bar for demo
+            if (dom.player.progressBar) {
+                dom.player.progressBar.style.width = demoProgress + '%';
+            }
+            if (dom.player.currentTime) {
+                const minutes = Math.floor(demoProgress * 3 / 100);
+                const seconds = Math.floor((demoProgress * 3 % 100) * 60 / 100);
+                dom.player.currentTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }, 1000);
     }
 
     function togglePlayPause() {

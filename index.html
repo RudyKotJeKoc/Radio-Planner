@@ -7,6 +7,7 @@
     
     <meta name="description" content="Het officiële bedrijfsradiostation DAREMON ETS. Een energieke dosis humor, technologie en de beste muziek. Luister live!">
     <meta name="theme-color" content="#1A1A1A">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -16,13 +17,13 @@
     <!-- SEO & Social Media -->
     <meta property="og:title" content="DAREMON Radio ETS">
     <meta property="og:description" content="De beste bedrijfsradio vol humor en zorgvuldig geselecteerde energie.">
-    <meta property="og:image" content="https://placehold.co/1200x1200/1A1A1A/008878?text=DAREMON+Radio">
+    <meta property="og:image" content="./public/images/default-cover.svg">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://daremon.nl">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="DAREMON Radio ETS">
     <meta name="twitter:description" content="De beste bedrijfsradio vol humor en zorgvuldig geselecteerde energie.">
-    <meta name="twitter:image" content="https://placehold.co/1200x1200/1A1A1A/008878?text=DAREMON+Radio">
+    <meta name="twitter:image" content="./public/images/default-cover.svg">
     
     <!-- Icons -->
     <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
@@ -32,13 +33,23 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Fallback fonts if Google Fonts fail to load */
+        @font-face {
+            font-family: 'Orbitron-fallback';
+            src: local('Courier New'), local('monospace');
+            font-weight: 400 900;
+        }
+        @font-face {
+            font-family: 'Inter-fallback';
+            src: local('Arial'), local('Helvetica'), local('sans-serif');
+            font-weight: 300 700;
+        }
+    </style>
     <link rel="stylesheet" href="styles.css">
     
     <!-- GSAP Libraries for Advanced Animations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="./public/js/gsap-fallback.js"></script>
     
     <!-- Performance Optimization -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
@@ -165,8 +176,10 @@
                     <div class="player-container">
                         <div id="player-ui" class="player-main">
                             <div class="track-visual">
-                                <img id="track-cover" src="https://placehold.co/200x200/1A1A1A/008878?text=ETS" 
-                                     alt="Current track cover" class="track-cover">
+                                <img id="track-cover" src="./public/images/default-cover.svg" 
+                                     alt="Current track cover" class="track-cover"
+                                     onerror="this.style.backgroundColor='#1A1A1A'; this.style.color='#008878';"
+                                >
                                 <div class="cover-overlay">
                                     <div class="eq-bars">
                                         <span></span><span></span><span></span><span></span><span></span>
@@ -306,8 +319,10 @@
     <!-- Enhanced Sticky Player -->
     <div id="sticky-player" class="sticky-player">
         <div class="sticky-content">
-            <img id="sticky-track-cover" src="https://placehold.co/40x40/1A1A1A/008878?text=ETS" 
-                 alt="Current track" class="sticky-cover">
+            <img id="sticky-track-cover" src="./public/images/default-cover.svg" 
+                 alt="Current track" class="sticky-cover"
+                 onerror="this.style.backgroundColor='#1A1A1A';"
+            >
             <div id="sticky-player-info" class="sticky-info">
                 <h5 id="sticky-track-title" data-i18n-key="trackTitleDefault">Welkom bij DAREMON Radio ETS</h5>
                 <div id="sticky-progress-container" class="sticky-progress">
